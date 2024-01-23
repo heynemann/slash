@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	apiv2pb "github.com/yourselfhosted/slash/proto/gen/api/v2"
 	storepb "github.com/yourselfhosted/slash/proto/gen/store"
 	"github.com/yourselfhosted/slash/server/profile"
 	"github.com/yourselfhosted/slash/store"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type LicenseService struct {
@@ -55,8 +54,12 @@ func (s *LicenseService) LoadSubscription(ctx context.Context) (*apiv2pb.Subscri
 	}
 	if validateResponse.Valid {
 		subscription.Plan = apiv2pb.PlanType_PRO
-		if validateResponse.LicenseKey.ExpiresAt != nil && *validateResponse.LicenseKey.ExpiresAt != "" {
-			expiresTime, err := time.Parse("2006-01-02 15:04:05", *validateResponse.LicenseKey.ExpiresAt)
+		if validateResponse.LicenseKey.ExpiresAt != nil &&
+			*validateResponse.LicenseKey.ExpiresAt != "" {
+			expiresTime, err := time.Parse(
+				"2006-01-02 15:04:05",
+				*validateResponse.LicenseKey.ExpiresAt,
+			)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to parse license key expires time")
 			}
@@ -72,7 +75,10 @@ func (s *LicenseService) LoadSubscription(ctx context.Context) (*apiv2pb.Subscri
 	return subscription, nil
 }
 
-func (s *LicenseService) UpdateSubscription(ctx context.Context, licenseKey string) (*apiv2pb.Subscription, error) {
+func (s *LicenseService) UpdateSubscription(
+	ctx context.Context,
+	licenseKey string,
+) (*apiv2pb.Subscription, error) {
 	if licenseKey == "" {
 		return nil, errors.New("license key is required")
 	}
@@ -99,10 +105,12 @@ func (s *LicenseService) GetSubscription(ctx context.Context) (*apiv2pb.Subscrip
 	return s.LoadSubscription(ctx)
 }
 
-func (s *LicenseService) IsFeatureEnabled(feature FeatureType) bool {
-	matrix, ok := FeatureMatrix[feature]
-	if !ok {
-		return false
-	}
-	return matrix[s.cachedSubscription.Plan-1]
+func (*LicenseService) IsFeatureEnabled(_ FeatureType) bool {
+	// matrix, ok := FeatureMatrix[feature]
+	// if !ok {
+	// return false
+	// }
+	// return matrix[s.cachedSubscription.Plan-1]
+
+	return true
 }
